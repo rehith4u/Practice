@@ -1,0 +1,59 @@
+timestamps {
+
+node{
+
+properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5')), [$class: 'JobLocalConfiguration', changeReasonComment: ''], pipelineTriggers([githubPush()])])
+
+ def mavenHome = tool name: "maven3.8.2"
+
+
+       echo "GitHub BranhName ${env.BRANCH_NAME}"
+       echo "Jenkins Job Number ${env.BUILD_NUMBER}"
+       echo "Jenkins Node Name ${env.NODE_NAME}"
+  
+       echo "Jenkins Home ${env.JENKINS_HOME}"
+       echo "Jenkins URL ${env.JENKINS_URL}"
+       echo "JOB Name ${env.JOB_NAME}"
+
+
+ stage('CheckoutCode')
+ {
+ git branch: 'development', credentialsId: '85595503-5475-4912-9e57-029aec6fbc3d', 
+url: 'https://github.com/rehith4u/maven-web-application.git'
+ }
+
+ stage('Build')
+ {
+ sh "${mavenHome}/bin/mvn clean package"
+ }
+
+ stage('SonarQubeReport')
+ {
+ sh "${mavenHome}/bin/mvn clean sonar:sonar"
+ }
+
+ stage('UploadArtifactIntoNexus'){
+ sh "${mavenHome}/bin/mvn clean deploy"
+ }
+
+ stage('DeployAppIntoTomcatServer')
+ {
+ sshagent(['a93e78be-655f-4c4c-8045-46fa0b6cf5be']) {
+ sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-users@13.233.199.145:/opt/apache-tomcat-9.0.52/webapps/"
+ }
+ }
+
+ 
+ stage('SendEmailNotification'){
+ emailext body: '''Build is Over !!
+
+ Regards
+
+ Rehith Siva
+ 9988776655''', subject: 'Build Over...!!', to: 'rehith4u@yahoo.com'
+
+ }
+
+}
+} 
+}

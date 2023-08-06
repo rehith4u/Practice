@@ -1,0 +1,10 @@
+FROM ubuntu:latest
+FROM openjdk:latest
+MAINTAINER rehithsiva
+WORKDIR /opt/
+ADD https://------------tomcat-9.0.tar.gz /opt
+RUN tar -xvfz apache-tomcat-9.0.tar.gz
+RUN mv apache------/* /opt/tomcat
+CMD ["opt/tomcat/bin/startup.sh", "run"]
+COPY target/maven-web-app*.war /usr/local/tomcat/webapps/maven-web-application.war
+

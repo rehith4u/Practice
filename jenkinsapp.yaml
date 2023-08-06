@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkinsapp
+spec:
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+     name: jenkinspod
+     labels:
+       app: jenkins
+    spec:
+      containers:
+      - name: jenkinscontainer
+        image: jenkins/jenkins:lts
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: jenkinsvol
+          mountPath: /var/jenkins_home
+      volumes:
+      - name: jenkinsvol
+        persistentVolumeClaim:
+          claimName: jenkinspvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jenkinspvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
